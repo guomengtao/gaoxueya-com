@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高血压健康视频</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
+    h1 { text-align: center; }
+    .video-list { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+    .video-item { width: 300px; cursor: pointer; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff; }
+    .video-item img { width: 100%; }
+    .video-item p { padding: 10px; margin: 0; text-align: center; }
+    #videoModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+    #videoModal iframe { width: 80%; height: 80%; border: none; }
+    #videoModal span { position:absolute; top:20px; right:40px; font-size:30px; color:#fff; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<h1>高血压健康视频</h1>
+
+<div class="video-list">
+  <div class="video-item" data-bvid="BV1xx411e7xxxx">
+    <img src="https://i0.hdslb.com/bfs/archive/xxxx.jpg" alt="高血压的危害与预防">
+    <p>高血压的危害与预防</p>
+  </div>
+  <div class="video-item" data-bvid="BV1xx411e7yyyy">
+    <img src="https://i0.hdslb.com/bfs/archive/yyyy.jpg" alt="高血压患者的饮食建议">
+    <p>高血压患者的饮食建议</p>
+  </div>
+  <div class="video-item" data-bvid="BV1xx411e7zzzz">
+    <img src="https://i0.hdslb.com/bfs/archive/zzzz.jpg" alt="高血压的运动疗法">
+    <p>高血压的运动疗法</p>
+  </div>
+  <div class="video-item" data-bvid="BV1xx411e7aaaa">
+    <img src="https://i0.hdslb.com/bfs/archive/aaaa.jpg" alt="高血压的中医调理方法">
+    <p>高血压的中医调理方法</p>
+  </div>
+  <div class="video-item" data-bvid="BV1xx411e7bbbb">
+    <img src="https://i0.hdslb.com/bfs/archive/bbbb.jpg" alt="高血压患者的日常管理">
+    <p>高血压患者的日常管理</p>
+  </div>
+</div>
+
+<div id="videoModal">
+  <span id="closeBtn">&times;</span>
+  <iframe id="videoFrame" src="" allowfullscreen></iframe>
+</div>
+
+<script>
+const items = document.querySelectorAll('.video-item');
+const modal = document.getElementById('videoModal');
+const frame = document.getElementById('videoFrame');
+const closeBtn = document.getElementById('closeBtn');
+
+items.forEach(item => {
+  item.addEventListener('click', () => {
+    const bvid = item.dataset.bvid;
+    frame.src = `https://player.bilibili.com/player.html?bvid=${bvid}&page=1`;
+    modal.style.display = 'flex';
+  });
+});
+
+closeBtn.addEventListener('click', () => {
+  frame.src = '';
+  modal.style.display = 'none';
+});
+</script>
+
+</body>
+</html>
