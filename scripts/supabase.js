@@ -1,5 +1,5 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
-import { getDomain, getTimestamp } from './utils.js';
+//import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+//import { getDomain, getTimestamp } from './utils.js';
 
 export function sendVisitData() {
     const data = {
