@@ -1,10 +1,10 @@
-// supabase.js
+// supabase.js v1.0.1
 
-// --- 临时配置（你可以改成自己真实的 Supabase 项目地址和 key） ---
+// --- Supabase 配置 ---
 const SUPABASE_URL = "https://your-project.supabase.co"; 
 const SUPABASE_ANON_KEY = "your-anon-key";
 
-// --- 辅助函数 ---
+// --- 辅助函数（内置，不依赖 utils.js） ---
 function getDomain() {
   return window.location.hostname || "unknown-domain";
 }
@@ -13,7 +13,7 @@ function getTimestamp() {
   return new Date().toISOString();
 }
 
-// --- 主函数 ---
+// --- 访问统计函数 ---
 export function sendVisitData() {
   const data = {
     domain: getDomain(),
