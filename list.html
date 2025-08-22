@@ -2,97 +2,30 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>B站视频分页展示</title>
+  <title>B站视频分页展示（接口分页）</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-    }
-    .card img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-    }
-    .card .info {
-      padding: 10px;
-      font-size: 13px;
-      color: #333;
-    }
-    .card .info div {
-      margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .pagination {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .pagination button {
-      margin: 0 5px;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    .pagination button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
+    body { margin:0; font-family:Arial; background:#f4f4f4; padding:20px; }
+    h2 { margin-bottom:10px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+    .card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); cursor:pointer; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-4px); }
+    .card img { width:100%; height:140px; object-fit:cover; }
+    .card .info { padding:10px; font-size:13px; color:#333; }
+    .card .info div { margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pagination { margin-top:20px; text-align:center; }
+    .pagination button { margin:0 5px; padding:6px 12px; border:none; border-radius:6px; background:#007bff; color:white; cursor:pointer; }
+    .pagination button:disabled { background:#ccc; cursor:not-allowed; }
     /* 弹窗 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      background: #000;
-      border-radius: 12px;
-      padding: 10px;
-      max-width: 800px;
-      width: 90%;
-    }
-    .modal iframe {
-      width: 100%;
-      height: 450px;
-      border: none;
-      border-radius: 8px;
-    }
-    .close {
-      position: absolute;
-      top: 20px; right: 20px;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-    }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
+    .modal-content { background:#000; border-radius:12px; padding:10px; max-width:800px; width:90%; }
+    .modal iframe { width:100%; height:450px; border:none; border-radius:8px; }
+    .close { position:absolute; top:20px; right:20px; font-size:24px; color:white; cursor:pointer; }
+    .summary { margin-bottom:10px; font-size:14px; color:#555; }
   </style>
 </head>
 <body>
-  <h2>B站视频分页展示</h2>
+  <h2>B站视频分页展示（接口分页）</h2>
+  <div class="summary" id="summaryInfo"></div>
   <div class="grid" id="videoGrid"></div>
   <div class="pagination">
     <button id="prevBtn">上一页</button>
@@ -109,71 +42,86 @@
   </div>
 
   <script>
-    let videos = [];
     let currentPage = 1;
     const pageSize = 10;
+    const keyword = "高血压";
+    let totalPages = 1;
 
-    // 加载本地 list.json
-    fetch("list.json")
-      .then(res => res.json())
-      .then(data => {
-        data.data.result.forEach(item => {
-          if(item.result_type === "video"){
-            item.data.forEach(v => {
-              videos.push({
-                title: v.title.replace(/<[^>]+>/g, ""),
-                bvid: v.bvid,
-                pic: "https://images.weserv.nl/?url=" + v.pic.replace(/^\/\//, ""),
-                author: v.author,
-                play: v.stat?.view || 0,
-                duration: v.duration,
+    function fetchData(page = 1) {
+      fetch(`https://api.bilibili.com/x/web-interface/search/all/v2?keyword=${encodeURIComponent(keyword)}&page=${page}&pagesize=${pageSize}`)
+        .then(res => res.json())
+        .then(data => {
+          totalPages = data.data.numPages || 1;
+
+          document.getElementById("summaryInfo").innerText = 
+            `code: ${data.code}, message: ${data.message}, 当前页: ${data.data.page}, 每页大小: ${data.data.pagesize}, 总结果: ${data.data.numResults}, 总页数: ${totalPages}`;
+
+          let videos = [];
+          data.data.result.forEach(item => {
+            if(item.result_type === "video"){
+              item.data.forEach(v => {
+                videos.push({
+                  title: v.title.replace(/<[^>]+>/g,""),
+                  bvid: v.bvid,
+                  pic: "https://images.weserv.nl/?url=" + v.pic.replace(/^\/\//,""),
+                  author: v.author,
+                  play: v.stat?.view || null,
+                  favorites: v.stat?.favorite || null,
+                  video_review: v.stat?.reply || null,
+                  duration: v.duration,
+                  tag: v.tag,
+                  description: v.description,
+                  pubdate: v.pubdate
+                });
               });
-            });
-          }
-        });
-        renderPage();
-      });
+            }
+          });
 
-    function renderPage(){
+          renderPage(videos);
+        });
+    }
+
+    function renderPage(videos){
       const grid = document.getElementById("videoGrid");
       grid.innerHTML = "";
 
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const pageVideos = videos.slice(start, end);
-
-      pageVideos.forEach(v => {
+      videos.forEach(v => {
         const div = document.createElement("div");
         div.className = "card";
-        div.innerHTML = `
-          <img src="${v.pic}" alt="${v.title}">
-          <div class="info">
-            <div title="${v.title}"><strong>${v.title}</strong></div>
-            <div>作者: ${v.author}</div>
-            <div>播放量: ${v.play}</div>
-            <div>时长: ${v.duration}</div>
-          </div>
-        `;
+
+        let infoHtml = `<div class="info">`;
+        infoHtml += `<div title="${v.title}"><strong>${v.title}</strong></div>`;
+        if(v.author) infoHtml += `<div>作者: ${v.author}</div>`;
+        if(v.play) infoHtml += `<div>播放量: ${v.play}</div>`;
+        if(v.favorites) infoHtml += `<div>收藏: ${v.favorites}</div>`;
+        if(v.video_review) infoHtml += `<div>评论: ${v.video_review}</div>`;
+        if(v.duration) infoHtml += `<div>时长: ${v.duration}</div>`;
+        if(v.tag) infoHtml += `<div>标签: ${v.tag}</div>`;
+        if(v.description) infoHtml += `<div>简介: ${v.description}</div>`;
+        if(v.pubdate) infoHtml += `<div>发布时间: ${new Date(v.pubdate*1000).toLocaleDateString()}</div>`;
+        infoHtml += `</div>`;
+
+        div.innerHTML = `<img src="${v.pic}" alt="${v.title}">${infoHtml}`;
         div.onclick = () => openModal(v.bvid);
         grid.appendChild(div);
       });
 
-      document.getElementById("pageInfo").innerText = `第 ${currentPage} 页 / 共 ${Math.ceil(videos.length / pageSize)} 页`;
+      document.getElementById("pageInfo").innerText = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
       document.getElementById("prevBtn").disabled = currentPage === 1;
-      document.getElementById("nextBtn").disabled = end >= videos.length;
+      document.getElementById("nextBtn").disabled = currentPage >= totalPages;
     }
 
     document.getElementById("prevBtn").onclick = () => {
       if(currentPage > 1){
         currentPage--;
-        renderPage();
+        fetchData(currentPage);
       }
     };
 
     document.getElementById("nextBtn").onclick = () => {
-      if(currentPage < Math.ceil(videos.length / pageSize)){
+      if(currentPage < totalPages){
         currentPage++;
-        renderPage();
+        fetchData(currentPage);
       }
     };
 
@@ -190,6 +138,9 @@
       player.src = "";
       modal.style.display = "none";
     }
+
+    // 默认加载第一页
+    fetchData(currentPage);
   </script>
 </body>
 </html>
