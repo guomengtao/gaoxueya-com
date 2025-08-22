@@ -31,11 +31,16 @@
       height: 140px;
       object-fit: cover;
     }
-    .card .title {
+    .card .info {
       padding: 10px;
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 13px;
       color: #333;
+    }
+    .card .info div {
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .pagination {
       margin-top: 20px;
@@ -87,7 +92,7 @@
   </style>
 </head>
 <body>
-  <h2>高血压相关视频</h2>
+  <h2>B站视频分页展示</h2>
   <div class="grid" id="videoGrid"></div>
   <div class="pagination">
     <button id="prevBtn">上一页</button>
@@ -112,7 +117,6 @@
     fetch("list.json")
       .then(res => res.json())
       .then(data => {
-        // 取出 video 类型的数据
         data.data.result.forEach(item => {
           if(item.result_type === "video"){
             item.data.forEach(v => {
@@ -120,6 +124,9 @@
                 title: v.title.replace(/<[^>]+>/g, ""),
                 bvid: v.bvid,
                 pic: "https://images.weserv.nl/?url=" + v.pic.replace(/^\/\//, ""),
+                author: v.author,
+                play: v.stat?.view || 0,
+                duration: v.duration,
               });
             });
           }
@@ -140,7 +147,12 @@
         div.className = "card";
         div.innerHTML = `
           <img src="${v.pic}" alt="${v.title}">
-          <div class="title">${v.title}</div>
+          <div class="info">
+            <div title="${v.title}"><strong>${v.title}</strong></div>
+            <div>作者: ${v.author}</div>
+            <div>播放量: ${v.play}</div>
+            <div>时长: ${v.duration}</div>
+          </div>
         `;
         div.onclick = () => openModal(v.bvid);
         grid.appendChild(div);
