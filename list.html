@@ -2,26 +2,182 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>图片展示</title>
+  <title>B站视频分页展示</title>
   <style>
     body {
       margin: 0;
-      display: flex;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+    .card .title {
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    /* 弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: #f4f4f4;
     }
-    img {
-      max-width: 100%;
-      height: auto;
+    .modal-content {
+      background: #000;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 10px;
+      max-width: 800px;
+      width: 90%;
+    }
+    .modal iframe {
+      width: 100%;
+      height: 450px;
+      border: none;
+      border-radius: 8px;
+    }
+    .close {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <img src="https://i1.hdslb.com/bfs/archive/49a74494e2411e8921324b4e5e55b4e4f8b3d797.jpg@672w_378h_1c_!web-search-common-cover.avif" alt="展示图片">
-  <img src="https://images.weserv.nl/?url=i1.hdslb.com/bfs/archive/49a74494e2411e8921324b4e5e55b4e4f8b3d797.jpg" alt="展示图片">
+  <h2>高血压相关视频</h2>
+  <div class="grid" id="videoGrid"></div>
+  <div class="pagination">
+    <button id="prevBtn">上一页</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn">下一页</button>
+  </div>
+
+  <!-- 弹窗播放 -->
+  <div class="modal" id="videoModal">
+    <div class="close" onclick="closeModal()">✖</div>
+    <div class="modal-content">
+      <iframe id="player" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    let videos = [];
+    let currentPage = 1;
+    const pageSize = 10;
+
+    // 加载本地 list.json
+    fetch("list.json")
+      .then(res => res.json())
+      .then(data => {
+        // 取出 video 类型的数据
+        data.data.result.forEach(item => {
+          if(item.result_type === "video"){
+            item.data.forEach(v => {
+              videos.push({
+                title: v.title.replace(/<[^>]+>/g, ""),
+                bvid: v.bvid,
+                pic: "https://images.weserv.nl/?url=" + v.pic.replace(/^\/\//, ""),
+              });
+            });
+          }
+        });
+        renderPage();
+      });
+
+    function renderPage(){
+      const grid = document.getElementById("videoGrid");
+      grid.innerHTML = "";
+
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageVideos = videos.slice(start, end);
+
+      pageVideos.forEach(v => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <img src="${v.pic}" alt="${v.title}">
+          <div class="title">${v.title}</div>
+        `;
+        div.onclick = () => openModal(v.bvid);
+        grid.appendChild(div);
+      });
+
+      document.getElementById("pageInfo").innerText = `第 ${currentPage} 页 / 共 ${Math.ceil(videos.length / pageSize)} 页`;
+      document.getElementById("prevBtn").disabled = currentPage === 1;
+      document.getElementById("nextBtn").disabled = end >= videos.length;
+    }
+
+    document.getElementById("prevBtn").onclick = () => {
+      if(currentPage > 1){
+        currentPage--;
+        renderPage();
+      }
+    };
+
+    document.getElementById("nextBtn").onclick = () => {
+      if(currentPage < Math.ceil(videos.length / pageSize)){
+        currentPage++;
+        renderPage();
+      }
+    };
+
+    function openModal(bvid){
+      const modal = document.getElementById("videoModal");
+      const player = document.getElementById("player");
+      player.src = `//player.bilibili.com/player.html?bvid=${bvid}&autoplay=1`;
+      modal.style.display = "flex";
+    }
+
+    function closeModal(){
+      const modal = document.getElementById("videoModal");
+      const player = document.getElementById("player");
+      player.src = "";
+      modal.style.display = "none";
+    }
+  </script>
 </body>
 </html>
