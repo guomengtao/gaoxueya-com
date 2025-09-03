@@ -1,83 +1,831 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>高血压健康视频</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
-    h1 { text-align: center; }
-    .video-list { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-    .video-item { width: 300px; cursor: pointer; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff; }
-    .video-item img { width: 100%; }
-    .video-item p { padding: 10px; margin: 0; text-align: center; }
-    #videoModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
-    #videoModal iframe { width: 80%; height: 80%; border: none; }
-    #videoModal span { position:absolute; top:20px; right:40px; font-size:30px; color:#fff; cursor:pointer; }
+  <title>高血压健康指南 | 了解、预防与管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6', // 蓝色作为主色调，传达专业和信任感
+            secondary: '#EF4444', // 红色作为警示色，与高血压相关
+            accent: '#10B981', // 绿色作为健康指标色
+            neutral: {
+              100: '#F3F4F6',
+              200: '#E5E7EB',
+              700: '#374151',
+              800: '#1F2937',
+              900: '#111827'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .transition-theme {
+        transition: all 0.3s ease-in-out;
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      .pulse-effect {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+      }
+      .bp-gauge {
+        position: relative;
+        width: 100%;
+        max-width: 300px;
+        height: 150px;
+        margin: 0 auto;
+      }
+    }
   </style>
-
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZS725HDYSM"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-ZS725HDYSM');
-</script>
 </head>
-<body>
 
-<h1>高血压健康视频</h1>
+<body class="bg-gray-50 dark:bg-neutral-900 text-neutral-800 dark:text-gray-100 min-h-screen transition-theme">
+  <!-- 顶部导航栏 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-neutral-800 shadow-md transition-theme">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+            <i class="fa fa-heartbeat text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold">血压健康指南</span>
+        </div>
+        
+        <!-- 导航链接 - 桌面端 -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <a href="#overview" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">概述</a>
+          <a href="#causes" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">成因</a>
+          <a href="#symptoms" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">症状</a>
+          <a href="#management" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">管理</a>
+          <a href="#tools" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">工具</a>
+        </nav>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 搜索按钮 -->
+          <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors" id="searchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+          
+          <!-- 主题切换按钮 -->
+          <button class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors" id="themeToggle">
+            <i class="fa fa-sun-o text-yellow-500 dark:hidden"></i>
+            <i class="fa fa-moon-o text-gray-300 hidden dark:block"></i>
+          </button>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 搜索框 -->
+      <div class="hidden pb-4 transition-all duration-300" id="searchBox">
+        <div class="relative">
+          <input type="text" placeholder="搜索高血压相关信息..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-neutral-700 border-0 focus:ring-2 focus:ring-primary/50 transition-colors">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4 transition-all duration-300" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">概述</a>
+          <a href="#causes" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">成因</a>
+          <a href="#symptoms" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">症状</a>
+          <a href="#management" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">管理</a>
+          <a href="#tools" class="text-neutral-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">工具</a>
+        </nav>
+      </div>
+    </div>
+  </header>
 
-<div class="video-list">
-  <div class="video-item" data-bvid="BV1jh4y1p74c">
-    <img src="images/001.jpeg" alt="高血压的危害与预防">
-    <p>高血压的危害与预防</p>
+  <!-- 英雄区域 -->
+  <section class="relative bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 py-16 md:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 pulse-effect">高血压防治指南</h1>
+        <p class="text-xl md:text-2xl text-neutral-700 dark:text-gray-300 mb-8">了解高血压的成因、危害与管理方法，守护您的心血管健康</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="#management" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors font-medium">
+            开始管理计划
+          </a>
+          <a href="#tools" class="px-6 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-lg transition-colors font-medium">
+            使用血压工具
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 血压指标卡片 -->
+  <section class="py-12 -mt-8 relative z-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <!-- 正常血压 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 card-hover border-t-4 border-accent">
+          <div class="text-center mb-4">
+            <h3 class="text-xl font-bold mb-1">正常血压</h3>
+            <p class="text-accent font-medium">低于 120/80 mmHg</p>
+          </div>
+          <p class="text-sm text-neutral-600 dark:text-gray-400 text-center">
+            理想的血压范围，表明心血管系统健康状况良好。
+          </p>
+        </div>
+        
+        <!-- 正常高值 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 card-hover border-t-4 border-yellow-500">
+          <div class="text-center mb-4">
+            <h3 class="text-xl font-bold mb-1">正常高值</h3>
+            <p class="text-yellow-500 font-medium">120-139/80-89 mmHg</p>
+          </div>
+          <p class="text-sm text-neutral-600 dark:text-gray-400 text-center">
+            血压偏高但未达高血压标准，需要注意生活方式调整。
+          </p>
+        </div>
+        
+        <!-- 高血压 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 card-hover border-t-4 border-secondary">
+          <div class="text-center mb-4">
+            <h3 class="text-xl font-bold mb-1">高血压</h3>
+            <p class="text-secondary font-medium">140/90 mmHg 及以上</p>
+          </div>
+          <p class="text-sm text-neutral-600 dark:text-gray-400 text-center">
+            需要医学干预和生活方式改变的高血压范围。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container mx-auto px-4 py-12">
+    <!-- 高血压概述 -->
+    <section id="overview" class="mb-16">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 flex items-center">
+          <i class="fa fa-info-circle text-primary mr-3"></i>高血压概述
+        </h2>
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md">
+          <p class="mb-4 leading-relaxed">
+            高血压，也称为血压升高，是指血液在血管中流动时对血管壁造成的压力持续高于正常水平。它通常被称为"无声的杀手"，因为许多患者可能没有明显症状，但长期高血压会显著增加心脏病、中风和肾脏疾病的风险。
+          </p>
+          <p class="mb-4 leading-relaxed">
+            全球约有12.8亿30-79岁成年人患有高血压，其中大多数生活在低收入和中等收入国家。据世界卫生组织统计，高血压是全球过早死亡的主要原因之一。
+          </p>
+          
+          <div class="mt-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border-l-4 border-primary">
+            <h4 class="font-medium mb-2">关键事实</h4>
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+              <li>高血压通常没有症状，但可导致严重的健康问题</li>
+              <li>通过健康的生活方式可以预防或控制高血压</li>
+              <li>大约50%的高血压患者不知道自己患病</li>
+              <li>定期测量血压是早期发现高血压的唯一方法</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 高血压成因 -->
+    <section id="causes" class="mb-16">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 flex items-center">
+          <i class="fa fa-search text-primary mr-3"></i>高血压的成因
+        </h2>
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold mb-4">主要风险因素</h3>
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>不良饮食习惯，特别是高盐摄入</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>缺乏体育锻炼和久坐的生活方式</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>超重和肥胖</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>过量饮酒和吸烟</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>长期精神压力和焦虑</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
+                  <span>年龄增长和家族遗传史</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-semibold mb-4">类型与原因</h3>
+              <div class="space-y-4">
+                <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                  <h4 class="font-medium mb-1">原发性高血压</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">
+                    最常见的类型，约占所有病例的90-95%，通常随着年龄增长逐渐发展，没有明确的单一原因。
+                  </p>
+                </div>
+                
+                <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                  <h4 class="font-medium mb-1">继发性高血压</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">
+                    由其他健康问题引起，如肾脏疾病、内分泌 disorders、睡眠呼吸暂停或某些药物，约占5-10%的病例。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 高血压症状 -->
+    <section id="symptoms" class="mb-16">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 flex items-center">
+          <i class="fa fa-exclamation-triangle text-primary mr-3"></i>高血压的症状与并发症
+        </h2>
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md">
+          <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-3">常见症状</h3>
+            <p class="mb-4">
+              大多数高血压患者没有明显症状，这也是为什么定期检查如此重要。然而，在血压严重升高的情况下，可能出现以下症状：
+            </p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg text-center">
+                <i class="fa fa-headphones text-secondary mb-2"></i>
+                <p class="text-sm">头痛</p>
+              </div>
+              <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg text-center">
+                <i class="fa fa-eye text-secondary mb-2"></i>
+                <p class="text-sm">视力模糊</p>
+              </div>
+              <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg text-center">
+                <i class="fa fa-heartbeat text-secondary mb-2"></i>
+                <p class="text-sm">心悸</p>
+              </div>
+              <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg text-center">
+                <i class="fa fa-dizzy text-secondary mb-2"></i>
+                <p class="text-sm">头晕</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-xl font-semibold mb-3">长期并发症</h3>
+            <p class="mb-4">长期未控制的高血压会导致严重的健康问题：</p>
+            
+            <div class="space-y-3">
+              <div class="flex items-start p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                <div class="bg-secondary/10 p-2 rounded-full mr-3">
+                  <i class="fa fa-heart text-secondary"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">心脏病和心力衰竭</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">高血压增加心脏负担，可能导致冠心病、心肌梗死和心力衰竭</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                <div class="bg-secondary/10 p-2 rounded-full mr-3">
+                  <i class="fa fa-brain text-secondary"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">中风</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">高血压是中风的主要危险因素，可能导致脑出血或脑梗塞</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                <div class="bg-secondary/10 p-2 rounded-full mr-3">
+                  <i class="fa fa-kidneys text-secondary"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">肾脏疾病</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">高血压会损害肾脏血管，逐渐降低肾功能，严重时导致肾衰竭</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                <div class="bg-secondary/10 p-2 rounded-full mr-3">
+                  <i class="fa fa-eye text-secondary"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">眼部疾病</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">高血压可损害眼底血管，导致视力下降甚至失明</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 高血压管理 -->
+    <section id="management" class="mb-16">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 flex items-center">
+          <i class="fa fa-medkit text-primary mr-3"></i>高血压的管理与预防
+        </h2>
+        <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-xl font-semibold mb-4">生活方式调整</h3>
+              
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-cutlery text-accent"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">健康饮食</h4>
+                    <p class="text-sm text-neutral-600 dark:text-gray-400">
+                      减少钠盐摄入（每天不超过5克），增加钾的摄入，多吃水果、蔬菜和全谷物，选择低脂乳制品。
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-running text-accent"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">规律运动</h4>
+                    <p class="text-sm text-neutral-600 dark:text-gray-400">
+                      每周至少进行150分钟中等强度有氧运动，如快走、游泳或骑自行车，辅以适当的力量训练。
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-balance-scale text-accent"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">维持健康体重</h4>
+                    <p class="text-sm text-neutral-600 dark:text-gray-400">
+                      减轻体重有助于降低血压，即使只是少量减重也能带来显著益处。
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-glass text-accent"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">限制酒精和戒烟</h4>
+                    <p class="text-sm text-neutral-600 dark:text-gray-400">
+                      过量饮酒会升高血压，戒烟可降低心血管疾病风险。
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-heart-o text-accent"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">管理压力</h4>
+                    <p class="text-sm text-neutral-600 dark:text-gray-400">
+                      通过冥想、瑜伽、深呼吸练习或其他放松技巧来减轻压力。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-semibold mb-4">医疗干预</h3>
+              
+              <div class="space-y-4">
+                <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                  <h4 class="font-medium mb-1">降压药物</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400 mb-2">
+                    常见的降压药物包括：
+                  </p>
+                  <ul class="text-sm text-neutral-600 dark:text-gray-400 list-disc pl-5 space-y-1">
+                    <li>利尿剂（如噻嗪类）</li>
+                    <li>钙通道阻滞剂</li>
+                    <li>血管紧张素转换酶抑制剂(ACEI)</li>
+                    <li>血管紧张素受体阻滞剂(ARB)</li>
+                    <li>β受体阻滞剂</li>
+                  </ul>
+                </div>
+                
+                <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                  <h4 class="font-medium mb-1">定期监测</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">
+                    高血压患者应定期测量血压并记录，遵医嘱复诊，不要自行停药或调整剂量。
+                  </p>
+                </div>
+                
+                <div class="p-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg">
+                  <h4 class="font-medium mb-1">并发症管理</h4>
+                  <p class="text-sm text-neutral-600 dark:text-gray-400">
+                    同时管理其他心血管风险因素，如高胆固醇、糖尿病和肥胖，综合降低心血管疾病风险。
+                  </p>
+                </div>
+              </div>
+              
+              <div class="mt-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border-l-4 border-primary">
+                <h4 class="font-medium mb-2">重要提示</h4>
+                <p class="text-sm text-neutral-600 dark:text-gray-400">
+                  高血压管理需要长期坚持，即使血压得到控制也应继续遵循医生建议和健康生活方式。切勿在未咨询医生的情况下停止服药。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 工具与资源 -->
+    <section id="tools" class="mb-16">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 flex items-center">
+          <i class="fa fa-wrench text-primary mr-3"></i>高血压管理工具
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 血压记录工具 -->
+          <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md card-hover">
+            <h3 class="text-xl font-semibold mb-4">血压记录工具</h3>
+            <p class="mb-4 text-sm text-neutral-600 dark:text-gray-400">
+              记录您的血压测量结果，追踪变化趋势，帮助您和医生更好地管理高血压。
+            </p>
+            
+            <div class="space-y-3 mb-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">日期</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">时间</label>
+                <input type="time" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium mb-1">收缩压 (mmHg)</label>
+                  <input type="number" placeholder="如: 120" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">舒张压 (mmHg)</label>
+                  <input type="number" placeholder="如: 80" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">备注</label>
+                <textarea rows="2" placeholder="如: 服药后、运动后等" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50"></textarea>
+              </div>
+            </div>
+            
+            <button class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+              保存记录
+            </button>
+          </div>
+          
+          <!-- 血压分类工具 -->
+          <div class="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md card-hover">
+            <h3 class="text-xl font-semibold mb-4">血压分类工具</h3>
+            <p class="mb-4 text-sm text-neutral-600 dark:text-gray-400">
+              输入您的血压值，查看您的血压分类，并获取相应的建议。
+            </p>
+            
+            <div class="mb-6">
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">收缩压 (mmHg)</label>
+                  <input type="number" id="systolic" placeholder="如: 120" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">舒张压 (mmHg)</label>
+                  <input type="number" id="diastolic" placeholder="如: 80" class="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                </div>
+              </div>
+              
+              <button id="classifyBtn" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium mb-4">
+                查看分类
+              </button>
+              
+              <div id="resultArea" class="p-4 rounded-lg bg-gray-50 dark:bg-neutral-700/50 hidden">
+                <h4 id="resultTitle" class="font-medium mb-2 text-center"></h4>
+                <p id="resultDesc" class="text-sm text-neutral-600 dark:text-gray-400 text-center"></p>
+              </div>
+            </div>
+            
+            <!-- 血压图表 -->
+            <div class="mt-6">
+              <h4 class="font-medium mb-3 text-center text-sm">血压分类范围</h4>
+              <div class="h-12 bg-gray-200 dark:bg-neutral-700 rounded-full relative overflow-hidden">
+                <div class="absolute inset-0 flex">
+                  <div class="w-1/4 bg-accent/30"></div>
+                  <div class="w-1/4 bg-yellow-500/30"></div>
+                  <div class="w-1/4 bg-orange-500/30"></div>
+                  <div class="w-1/4 bg-secondary/30"></div>
+                </div>
+                <div class="absolute inset-0 flex items-end text-xs justify-around pb-1 font-medium">
+                  <span>正常</span>
+                  <span>正常高值</span>
+                  <span>高血压1级</span>
+                  <span>高血压2级</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-  <div class="video-item" data-bvid="BV1p4421S7dU">
-    <img src="images/002.jpeg" alt="高血压患者的饮食建议">
-    <p>高血压患者的饮食建议</p>
-  </div>
-  <div class="video-item" data-bvid="BV1p4421S7dU">
-    <img src="images/001.jpeg" alt="高血压的运动疗法">
-    <p>高血压的运动疗法</p>
-  </div>
-  <div class="video-item" data-bvid="BV1p4421S7dU">
-    <img src="images/002.jpeg" alt="高血压的中医调理方法">
-    <p>高血压的中医调理方法</p>
-  </div>
-  <div class="video-item" data-bvid="BV1p4421S7dU">
-    <img src="images/001.jpeg" alt="高血压患者的日常管理">
-    <p>高血压患者的日常管理</p>
-  </div>
-</div>
 
-<div id="videoModal">
-  <span id="closeBtn">&times;</span>
-  <iframe id="videoFrame" src="" allowfullscreen></iframe>
-</div>
+  <!-- 页脚 -->
+  <footer class="bg-white dark:bg-neutral-800 border-t border-gray-200 dark:border-neutral-700 py-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+              <i class="fa fa-heartbeat text-white text-sm"></i>
+            </div>
+            <span class="text-lg font-bold">血压健康指南</span>
+          </div>
+          <p class="text-sm text-neutral-600 dark:text-gray-400 mb-4">
+            提供专业的高血压防治知识，帮助您了解、预防和管理高血压，守护心血管健康。
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-neutral-500 hover:text-primary transition-colors">
+              <i class="fa fa-weibo"></i>
+            </a>
+            <a href="#" class="text-neutral-500 hover:text-primary transition-colors">
+              <i class="fa fa-wechat"></i>
+            </a>
+            <a href="#" class="text-neutral-500 hover:text-primary transition-colors">
+              <i class="fa fa-youtube-play"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#overview" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">高血压概述</a></li>
+            <li><a href="#causes" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">成因与风险因素</a></li>
+            <li><a href="#symptoms" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">症状与并发症</a></li>
+            <li><a href="#management" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">管理与预防</a></li>
+            <li><a href="#tools" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">健康工具</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-semibold mb-4">相关资源</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">高血压饮食指南</a></li>
+            <li><a href="#" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">适合高血压的运动</a></li>
+            <li><a href="#" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">高血压药物指南</a></li>
+            <li><a href="#" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">高血压患者日常护理</a></li>
+            <li><a href="#" class="text-neutral-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">高血压常见问题</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-semibold mb-4">联系我们</h4>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-start">
+              <i class="fa fa-envelope-o text-primary mt-1 mr-2"></i>
+              <span class="text-neutral-600 dark:text-gray-400">contact@bloodpressure-guide.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-phone text-primary mt-1 mr-2"></i>
+              <span class="text-neutral-600 dark:text-gray-400">400-123-4567</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-clock-o text-primary mt-1 mr-2"></i>
+              <span class="text-neutral-600 dark:text-gray-400">周一至周五 9:00-17:00</span>
+            </li>
+          </ul>
+          
+          <div class="mt-4">
+            <h5 class="font-medium mb-2 text-sm">订阅健康资讯</h5>
+            <div class="flex">
+              <input type="email" placeholder="您的邮箱地址" class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-neutral-600 rounded-l-lg bg-gray-50 dark:bg-neutral-700 focus:outline-none focus:ring-1 focus:ring-primary">
+              <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors text-sm">
+                订阅
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-200 dark:border-neutral-700 pt-6 text-center text-sm text-neutral-500">
+        <p>© 2023 血压健康指南 版权所有 | 本网站信息仅供参考，不构成医疗建议</p>
+      </div>
+    </div>
+  </footer>
 
- <script>
-const items = document.querySelectorAll('.video-item');
-const modal = document.getElementById('videoModal');
-const frame = document.getElementById('videoFrame');
-const closeBtn = document.getElementById('closeBtn');
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 主题切换功能
+      const themeToggle = document.getElementById('themeToggle');
+      const htmlElement = document.documentElement;
+      
+      // 检查本地存储的主题偏好
+      if (localStorage.getItem('theme') === 'dark' || 
+          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        htmlElement.classList.add('dark');
+      } else {
+        htmlElement.classList.remove('dark');
+      }
+      
+      // 切换主题
+      themeToggle.addEventListener('click', function() {
+        htmlElement.classList.toggle('dark');
+        localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        // 如果搜索框打开则关闭
+        if (!searchBox.classList.contains('hidden')) {
+          searchBox.classList.add('hidden');
+        }
+      });
+      
+      // 搜索框切换
+      const searchBtn = document.getElementById('searchBtn');
+      const searchBox = document.getElementById('searchBox');
+      
+      searchBtn.addEventListener('click', function() {
+        searchBox.classList.toggle('hidden');
+        // 如果移动菜单打开则关闭
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单和搜索框（如果打开）
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+            if (!searchBox.classList.contains('hidden')) {
+              searchBox.classList.add('hidden');
+            }
+          }
+        });
+      });
+      
+      // 血压分类功能
+      const classifyBtn = document.getElementById('classifyBtn');
+      const systolicInput = document.getElementById('systolic');
+      const diastolicInput = document.getElementById('diastolic');
+      const resultArea = document.getElementById('resultArea');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultDesc = document.getElementById('resultDesc');
+      
+      classifyBtn.addEventListener('click', function() {
+        const systolic = parseInt(systolicInput.value);
+        const diastolic = parseInt(diastolicInput.value);
+        
+        if (isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
+          alert('请输入有效的血压值');
+          return;
+        }
+        
+        let category, description, color;
+        
+        if (systolic < 120 && diastolic < 80) {
+          category = '正常血压';
+          description = '您的血压在正常范围内，继续保持健康的生活方式。';
+          color = 'text-accent';
+        } else if ((systolic >= 120 && systolic < 130) && diastolic < 80) {
+          category = '正常高值血压';
+          description = '您的血压略高于理想水平，建议调整生活方式，定期监测。';
+          color = 'text-yellow-500';
+        } else if ((systolic >= 130 && systolic < 140) || (diastolic >= 80 && diastolic < 90)) {
+          category = '高血压1级';
+          description = '您的血压轻度升高，建议咨询医生，考虑生活方式调整或药物治疗。';
+          color = 'text-orange-500';
+        } else if (systolic >= 140 || diastolic >= 90) {
+          category = '高血压2级';
+          description = '您的血压明显升高，应尽快咨询医生，可能需要药物治疗和生活方式调整。';
+          color = 'text-secondary';
+        } else {
+          category = '血压异常';
+          description = '请重新测量或咨询医疗专业人士。';
+          color = 'text-neutral-600 dark:text-gray-400';
+        }
+        
+        resultTitle.textContent = `${category} (${systolic}/${diastolic} mmHg)`;
+        resultTitle.className = `font-medium mb-2 text-center ${color}`;
+        resultDesc.textContent = description;
+        resultArea.classList.remove('hidden');
+        
+        // 添加显示动画
+        resultArea.style.opacity = '0';
+        resultArea.style.transform = 'translateY(10px)';
+        resultArea.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        
+        setTimeout(() => {
+          resultArea.style.opacity = '1';
+          resultArea.style.transform = 'translateY(0)';
+        }, 50);
+      });
+      
+      // 滚动动画
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -100px 0px',
+        threshold: 0.1
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            // 添加延迟动画
+            entry.target.style.opacity = "0";
+            entry.target.style.transform = "translateY(20px)";
+            entry.target.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+            
+            setTimeout(() => {
+              entry.target.style.opacity = "1";
+              entry.target.style.transform = "translateY(0)";
+            }, 50);
+            
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+      
+      // 观察所有主要内容区块
+      document.querySelectorAll('section[id]').forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+ 
 
-items.forEach(item => {
-  item.addEventListener('click', () => {
-    const bvid = item.dataset.bvid;
-    // 只显示播放器，不带外链
-    frame.src = `https://player.bilibili.com/player.html?bvid=${bvid}&page=1&as_wide=1&high_quality=1&danmaku=0`;
-    modal.style.display = 'flex';
-  });
-});
-
-closeBtn.addEventListener('click', () => {
-  frame.src = '';
-  modal.style.display = 'none';
-});
-</script>
 
 <script type="module" src="https://www.gaoxueya.com/scripts/stats.js?domain=www.gaoxueya.com&v=20250821"></script>
   
